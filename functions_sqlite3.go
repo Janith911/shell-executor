@@ -8,7 +8,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var sql_db_path string = "./test.db"
 var execution_table_name string = "executions"
 
 // func main() {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/robfig/cron"
 )
@@ -30,10 +31,10 @@ func startCron(scripts Scripts, ch chan Scripts, shell string, InfoLogger *log.L
 			if err != nil {
 				ErrLogger.Println("Script ID :", v.Name, "| Execution Failed")
 				ErrLogger.Println("Script ID :", v.Name, "| STDERR : ", err)
-				insertData(db, execution_table_name, v.Name, "now", "FAILED", "SCHEDULED")
+				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "FAILED", "SCHEDULED")
 			} else {
 				InfoLogger.Println("Script ID :", v.Name, "| Execution Successful")
-				insertData(db, execution_table_name, v.Name, "now", "SUCCESS", "SCHEDULED")
+				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "SUCCESS", "SCHEDULED")
 			}
 			if string(out) != "" {
 				InfoLogger.Println("Script ID :", v.Name, "STDOUT : ", string(out))

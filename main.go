@@ -17,7 +17,7 @@ func main() {
 
 	ch := make(chan Scripts)
 
-	db := openDB(sql_db_path)
+	db := openDB(jsonConf.DbFilePath)
 	if !tableExists(db, execution_table_name) {
 		createTable(db, execution_table_name)
 	}

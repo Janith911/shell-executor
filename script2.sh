@@ -1,3 +1,3 @@
 # !/bin/bash
 
-echo "JANITH" >> test
+echo "JANITH"

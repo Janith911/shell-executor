@@ -15,8 +15,9 @@ type Script struct {
 }
 
 type Scripts struct {
-	Scripts []Script
+	Scripts     []Script
 	LogFilePath string
+	DbFilePath  string
 }
 
 func readConfig(confPath string) string {
