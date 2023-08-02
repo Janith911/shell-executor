@@ -28,11 +28,11 @@ func openDB(sql_db_path string) *sql.DB {
 
 func createTable(db *sql.DB, execution_table_name string) {
 	query := `CREATE TABLE TABLE_NAME (
-        executionId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         "ScriptName" TEXT,
         "StartTime" TEXT,
         "Status" TEXT,
-        "ExecutionType" TEXT);`
+        "ExecutionId" TEXT);`
 
 	query = strings.Replace(query, "TABLE_NAME", execution_table_name, 1)
 
@@ -70,14 +70,18 @@ func tableExists(db *sql.DB, execution_table_name string) bool {
 
 }
 
-func insertData(db *sql.DB, execution_table_name string, scriptId string, timeStamp string, status string, executionType string) {
-	query := `INSERT INTO TABLE_NAME (ScriptName,StartTime,Status,ExecutionType) VALUES($2,$3,$4,$5)`
+func insertData(db *sql.DB, execution_table_name string, scriptId string, timeStamp string, status string, executionId string) {
+	query := `INSERT INTO TABLE_NAME (ScriptName,StartTime,Status,ExecutionId) VALUES($2,$3,$4,$5)`
 	query = strings.Replace(query, "TABLE_NAME", execution_table_name, 1)
 
-	_, err := db.Exec(query, scriptId, timeStamp, status, executionType)
+	_, err := db.Exec(query, scriptId, timeStamp, status, executionId)
 
 	if err != nil {
 		fmt.Println("An ERROR occured while inserting data : ", err)
 	}
 
 }
+
+// func readData(db *sql.DB, table_name string, query string) {
+
+// }

@@ -4,11 +4,6 @@
             "Name" : "Test01",
             "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script1.sh",
             "CronExpression" : "0/7 * * * *"
-        },
-        {
-            "Name" : "Test02",
-            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script2.sh",
-            "CronExpression" : "0/5 * * * *"
         }
     ],
 

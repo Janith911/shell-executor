@@ -1,4 +1,3 @@
 # !/bin/bash
 
-ls -la ./
-echo "TEST"
+ls -la

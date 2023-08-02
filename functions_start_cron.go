@@ -29,15 +29,15 @@ func startCron(scripts Scripts, ch chan Scripts, shell string, InfoLogger *log.L
 			// cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 80}
 			out, err := cmd.Output()
 			if err != nil {
-				ErrLogger.Println("Script ID :", v.Name, "| Execution Failed")
-				ErrLogger.Println("Script ID :", v.Name, "| STDERR : ", err)
-				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "FAILED", "SCHEDULED")
+				ErrLogger.Println("Script ID : ", v.Name, "| Execution Failed")
+				ErrLogger.Println("Script ID : ", v.Name, "| STDERR : \n", err)
+				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "FAILED", "Scheduled_"+time.Now().Format("2006_01_02_15:04:05"))
 			} else {
-				InfoLogger.Println("Script ID :", v.Name, "| Execution Successful")
-				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "SUCCESS", "SCHEDULED")
+				InfoLogger.Println("Script ID : ", v.Name, "| Execution Successful")
+				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "SUCCESS", "Scheduled_"+time.Now().Format("2006_01_02_15:04:05"))
 			}
 			if string(out) != "" {
-				InfoLogger.Println("Script ID :", v.Name, "STDOUT : ", string(out))
+				InfoLogger.Println("Script ID : ", v.Name, "STDOUT : \n", string(out))
 			}
 
 		})
