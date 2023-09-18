@@ -7,6 +7,8 @@
         }
     ],
 
-    "LogFilePath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/execution.log", 
-    "DbFilePath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/shell-executor.db"
+    "LogFilePath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/logs/execution.log", 
+    "DbFilePath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/db/shell-executor.db",
+    "BindIP": "127.0.0.1",
+    "BindPort": "8080"
 }

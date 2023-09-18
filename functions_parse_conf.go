@@ -1,48 +1,38 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 )
 
 type Script struct {
-	Name           string
-	ScriptPath     string
-	CronExpression string
+	Name           string `json:"Name"`
+	ScriptPath     string `json:"ScriptPath"`
+	CronExpression string `json:"CronExpression"`
 }
 
-type Scripts struct {
-	Scripts     []Script
-	LogFilePath string
-	DbFilePath  string
+type Config struct {
+	Scripts     []Script `json:"Scripts"`
+	LogFilePath string   `json:"LogFilePath"`
+	DbFilePath  string   `json:"DbFilePath"`
+	BindIP      string   `json:"BindIP"`
+	BindPort    string   `json:"BindPort"`
 }
 
-func readConfig(confPath string) string {
-	confFile, err := os.Open(confPath)
+func readConfig(confPath string) Config {
+	confFile, err := os.ReadFile(confPath)
 	if err != nil {
 		fmt.Println("Failed Reading Configuration File")
 	}
 
-	var b bytes.Buffer
-	mw := io.Writer(&b)
-	io.Copy(mw, confFile)
-	return b.String()
+	obj := Config{}
+	e := json.Unmarshal(confFile, &obj)
 
-}
-
-func unmarshalConfig(conf string) Scripts {
-	bs := []byte(conf)
-	scripts := Scripts{}
-
-	err := json.Unmarshal(bs, &scripts)
-
-	if err != nil {
-		fmt.Println("Failed Parsing Configuration File : ", err)
-		os.Exit(1)
+	if e != nil {
+		fmt.Println("Failed Unmarshalling Configuration File")
 	}
 
-	return scripts
+	return obj
+
 }

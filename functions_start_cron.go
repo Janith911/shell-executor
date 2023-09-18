@@ -10,7 +10,7 @@ import (
 	"github.com/robfig/cron"
 )
 
-func startCron(scripts Scripts, ch chan Scripts, shell string, InfoLogger *log.Logger, ErrLogger *log.Logger, db *sql.DB) {
+func startCron(scripts Config, ch chan Config, shell string, InfoLogger *log.Logger, ErrLogger *log.Logger, db *sql.DB) {
 
 	c := cron.New()
 

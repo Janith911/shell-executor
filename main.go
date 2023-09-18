@@ -2,29 +2,43 @@ package main
 
 import (
 	"log"
+	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 var CronEx = make(map[string][]string)
 
 func main() {
+	if os.Args[1] == "start" {
+		jsonConf := readConfig(os.Getenv("CONFIG_FILE_PATH"))
+		var LOG_FILE string = jsonConf.LogFilePath
 
-	jsonConf := unmarshalConfig(readConfig("./conf.json"))
+		var InfoLogger log.Logger = *log.New(openLogFile(LOG_FILE), "[INFO] ", log.Flags())
+		var ErrLogger log.Logger = *log.New(openLogFile(LOG_FILE), "[ERROR] ", log.Flags())
 
-	var LOG_FILE string = jsonConf.LogFilePath
+		ch := make(chan Config)
 
-	var InfoLogger log.Logger = *log.New(openLogFile(LOG_FILE), "[INFO] ", log.Flags())
-	var ErrLogger log.Logger = *log.New(openLogFile(LOG_FILE), "[ERROR] ", log.Flags())
+		db := openDB(jsonConf.DbFilePath)
+		if !tableExists(db, execution_table_name) {
+			createTable(db, execution_table_name)
+		}
 
-	ch := make(chan Scripts)
+		router := gin.Default()
+		router.GET("/executions", readDbHandler(db, execution_table_name))
+		go router.Run(jsonConf.BindIP + ":" + jsonConf.BindPort)
 
-	db := openDB(jsonConf.DbFilePath)
-	if !tableExists(db, execution_table_name) {
-		createTable(db, execution_table_name)
-	}
+		startCron(jsonConf, ch, "/bin/bash", &InfoLogger, &ErrLogger, db)
 
-	startCron(jsonConf, ch, "/bin/bash", &InfoLogger, &ErrLogger, db)
+		for s := range ch {
+			startCron(s, ch, "/bin/bash", &InfoLogger, &ErrLogger, db)
+		}
+	} else if os.Args[1] == "executions" {
+		if len(os.Args) == 2 {
+			viewDBOutputClient("http://127.0.0.1:8080")
+		} else if len(os.Args) == 3 {
+			viewDBOutputClient(os.Args[2])
+		}
 
-	for s := range ch {
-		startCron(s, ch, "/bin/bash", &InfoLogger, &ErrLogger, db)
 	}
 }
