@@ -3,12 +3,12 @@
         {
             "Name" : "Test01",
             "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script1.sh",
-            "CronExpression" : "0/28 * * * *"
+            "CronExpression" : "* 10 * * *"
         },
         {
             "Name" : "Test02",
             "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script2.sh",
-            "CronExpression" : "0/30 * * * *"
+            "CronExpression" :  "* 11 * * *"
         }
     ],
 

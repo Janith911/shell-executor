@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 	"os"
-
-	"github.com/gin-gonic/gin"
 )
 
 var CronEx = make(map[string][]string)
@@ -25,12 +23,14 @@ func main() {
 			createTable(db, execution_table_name)
 		}
 		// START API
-		fmt.Println("Starting HTTP Endpoint")
-		router := gin.Default()
-		router.GET("/executions", readDbHandler(db, execution_table_name))
-		router.POST("/execute", manualExecutionHandler(jsonConf, &InfoLogger, &ErrLogger, db))
-		go router.Run(jsonConf.BindIP + ":" + jsonConf.BindPort)
-		fmt.Println("Started HTTP Endpoint successfully")
+		// fmt.Println("Starting HTTP Endpoint")
+		log.Println("Starting HTTP Endpoint")
+		http.HandleFunc("/executions", readDbHandler(db, execution_table_name))
+		http.HandleFunc("/execute", manualExecutionHandler(jsonConf, &InfoLogger, &ErrLogger, db))
+		go http.ListenAndServe(jsonConf.BindIP+":"+jsonConf.BindPort, nil)
+		// fmt.Println("Started HTTP Endpoint successfully")
+		log.Println("Started HTTP Endpoint successfully")
+		log.Println("Listening on : http://" + jsonConf.BindIP + ":" + jsonConf.BindPort)
 
 		// START SCHEDULER
 		startCron(jsonConf, ch, "/bin/bash", &InfoLogger, &ErrLogger, db)
