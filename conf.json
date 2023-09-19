@@ -2,15 +2,18 @@
     "Scripts" : [
         {
             "Name" : "Test01",
-            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/SHELL_EXECUTOR_2023_05_22/script1.sh",
-            "CronExpression" : "0/7 * * * *"
+            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script1.sh",
+            "CronExpression" : "* 10 * * *"
         },
         {
             "Name" : "Test02",
-            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/SHELL_EXECUTOR_2023_05_22/script2.sh",
-            "CronExpression" : "0/5 * * * *"
+            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script2.sh",
+            "CronExpression" :  "* 11 * * *"
         }
     ],
 
-    "LogFilePath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/SHELL_EXECUTOR_2023_05_22/execution.log" 
+    "LogFilePath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/logs/execution.log", 
+    "DbFilePath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/db/shell-executor.db",
+    "BindIP": "127.0.0.1",
+    "BindPort": "8080"
 }

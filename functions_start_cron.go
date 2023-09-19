@@ -1,15 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/robfig/cron"
 )
 
-func startCron(scripts Scripts, ch chan Scripts, shell string, InfoLogger *log.Logger, ErrLogger *log.Logger, db *sql.DB) {
+func startCron(scripts Config, ch chan Config, shell string, InfoLogger *log.Logger, ErrLogger *log.Logger, db *sql.DB) {
 
 	c := cron.New()
 
@@ -24,19 +26,21 @@ func startCron(scripts Scripts, ch chan Scripts, shell string, InfoLogger *log.L
 				InfoLogger.Println("Script ID :", v.Name, "| Started Execution")
 			}
 			cmd := exec.Command(shell, v.ScriptPath)
-			// cmd.SysProcAttr = &syscall.SysProcAttr{}
-			// cmd.SysProcAttr.Credential = &syscall.Credential{Uid: 501, Gid: 80}
-			out, err := cmd.Output()
+			var cmd_out bytes.Buffer
+			var cmd_err bytes.Buffer
+			cmd.Stdout = &cmd_out
+			cmd.Stderr = &cmd_err
+			err = cmd.Run()
 			if err != nil {
-				ErrLogger.Println("Script ID :", v.Name, "| Execution Failed")
-				ErrLogger.Println("Script ID :", v.Name, "| STDERR : ", err)
-				insertData(db, execution_table_name, v.Name, "now", "FAILED", "SCHEDULED")
+				executionID := "Scheduled_" + time.Now().Format("2006_01_02_15:04:05")
+				ErrLogger.Println("Script ID : ", v.Name, "| Execution Failed | Execution ID : ", executionID)
+				ErrLogger.Println("Script ID : ", v.Name, "| STDERR : \n", cmd_err.String())
+				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "FAILED", executionID)
 			} else {
-				InfoLogger.Println("Script ID :", v.Name, "| Execution Successful")
-				insertData(db, execution_table_name, v.Name, "now", "SUCCESS", "SCHEDULED")
-			}
-			if string(out) != "" {
-				InfoLogger.Println("Script ID :", v.Name, "STDOUT : ", string(out))
+				executionID := "Scheduled_" + time.Now().Format("2006_01_02_15:04:05")
+				InfoLogger.Println("Script ID : ", v.Name, "| Execution Successful | Execution ID : ", executionID)
+				InfoLogger.Println("Script ID : ", v.Name, "STDOUT : \n", string(cmd_out.String()))
+				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "SUCCESS", executionID)
 			}
 
 		})
@@ -46,4 +50,44 @@ func startCron(scripts Scripts, ch chan Scripts, shell string, InfoLogger *log.L
 
 	ch <- scripts
 
+}
+
+func manualExecution(configurations Config, scriptName string, shell string, InfoLogger *log.Logger, ErrLogger *log.Logger, db *sql.DB) string {
+	var scriptDetails Script
+	for _, v := range configurations.Scripts {
+		if v.Name == scriptName {
+			scriptDetails = v
+			break
+		}
+	}
+	if scriptDetails.Name == "" {
+		return "No Such Script"
+	} else {
+		_, err := os.Stat(scriptDetails.ScriptPath)
+		if err != nil {
+			ErrLogger.Println("Script ID :", scriptDetails.Name, "| Error reading sciprt file")
+			ErrLogger.Println("Script ID :", scriptDetails.Name, "| STDERR : ", err)
+		} else {
+			InfoLogger.Println("Script ID :", scriptDetails.Name, "| Started Execution")
+		}
+		cmd := exec.Command(shell, scriptDetails.ScriptPath)
+		var cmd_out bytes.Buffer
+		var cmd_err bytes.Buffer
+		cmd.Stdout = &cmd_out
+		cmd.Stderr = &cmd_err
+		err = cmd.Run()
+		if err != nil {
+			executionID := "Manual_" + time.Now().Format("2006_01_02_15:04:05")
+			ErrLogger.Println("Script ID : ", scriptDetails.Name, "| Execution Failed | Execution ID : ", executionID)
+			ErrLogger.Println("Script ID : ", scriptDetails.Name, "| STDERR : \n", cmd_err.String())
+			insertData(db, execution_table_name, scriptDetails.Name, time.Now().Format(time.RFC3339), "FAILED", executionID)
+			return "Execution Failed"
+		} else {
+			executionId := "Manual_" + time.Now().Format("2006_01_02_15:04:05")
+			InfoLogger.Println("Script ID : ", scriptDetails.Name, "| Execution Successful | Execution ID : ", executionId)
+			InfoLogger.Println("Script ID : ", scriptDetails.Name, "STDOUT : \n", string(cmd_out.String()))
+			insertData(db, execution_table_name, scriptDetails.Name, time.Now().Format(time.RFC3339), "SUCCESS", executionId)
+			return "Execution Success"
+		}
+	}
 }

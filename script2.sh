@@ -1,3 +1,4 @@
 # !/bin/bash
 
-echo "JANITH" >> test
+echo "JANITH"
+nslookup web.facebook.com
