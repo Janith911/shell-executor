@@ -10,12 +10,6 @@ import (
 
 var execution_table_name string = "executions"
 
-// func main() {
-// 	createTable(openDB(sql_db_path), execution_table_name)
-// 	fmt.Println(tableExists(openDB(sql_db_path), execution_table_name))
-// 	insertData(openDB(sql_db_path), execution_table_name)
-// }
-
 func openDB(sql_db_path string) *sql.DB {
 	db, err := sql.Open("sqlite3", sql_db_path)
 
@@ -81,7 +75,3 @@ func insertData(db *sql.DB, execution_table_name string, scriptId string, timeSt
 	}
 
 }
-
-// func readData(db *sql.DB, table_name string, query string) {
-
-// }

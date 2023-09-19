@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -23,11 +24,15 @@ func main() {
 		if !tableExists(db, execution_table_name) {
 			createTable(db, execution_table_name)
 		}
-
+		// START API
+		fmt.Println("Starting HTTP Endpoint")
 		router := gin.Default()
 		router.GET("/executions", readDbHandler(db, execution_table_name))
+		router.POST("/execute", manualExecutionHandler(jsonConf, &InfoLogger, &ErrLogger, db))
 		go router.Run(jsonConf.BindIP + ":" + jsonConf.BindPort)
+		fmt.Println("Started HTTP Endpoint successfully")
 
+		// START SCHEDULER
 		startCron(jsonConf, ch, "/bin/bash", &InfoLogger, &ErrLogger, db)
 
 		for s := range ch {
@@ -40,5 +45,12 @@ func main() {
 			viewDBOutputClient(os.Args[2])
 		}
 
+	} else if os.Args[1] == "execute" {
+		if len(os.Args) == 4 {
+			url := "http://127.0.0.1:8080"
+			scriptName := os.Args[2]
+			shell := os.Args[3]
+			manuallyExecute(url, scriptName, shell)
+		}
 	}
 }
