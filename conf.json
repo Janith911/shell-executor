@@ -2,12 +2,12 @@
     "Scripts" : [
         {
             "Name" : "Test01",
-            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script1.sh",
+            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/scripts/script1.sh",
             "CronExpression" : "* 10 * * *"
         },
         {
             "Name" : "Test02",
-            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/script2.sh",
+            "ScriptPath" : "/Users/janithvinura/Desktop/EDU_STUFF/GO/shell-executor/scripts/script2.sh",
             "CronExpression" :  "* 11 * * *"
         }
     ],
