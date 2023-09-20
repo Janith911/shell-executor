@@ -36,7 +36,7 @@ func readDbHandler(db *sql.DB, execution_table_name string) func(w http.Response
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			query := `SELECT * FROM (SELECT * FROM TABLE_NAME ORDER BY id DESC LIMIT 10) ORDER BY id ASC;`
+			query := `SELECT * FROM TABLE_NAME ORDER BY id ASC;`
 			query = strings.Replace(query, "TABLE_NAME", execution_table_name, 1)
 			rows, err := db.Query(query, execution_table_name)
 			if err != nil {
@@ -64,7 +64,7 @@ func readDbHandler(db *sql.DB, execution_table_name string) func(w http.Response
 func manualExecutionHandler(configurations Config, InfoLogger *log.Logger, ErrLogger *log.Logger, db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case "POST":
+		case http.MethodPost:
 			var payload ManualPayload
 			var response ManualResponse
 			bs, err := io.ReadAll(r.Body)
@@ -112,7 +112,7 @@ func viewDBOutputClient(url string) {
 	tbl.Print()
 }
 
-func manuallyExecute(url string, scriptName string, shell string) {
+func manuallyExecuteClient(url string, scriptName string, shell string) {
 	var payload ManualPayload = ManualPayload{
 		ScriptName: scriptName,
 		Shell:      shell,
