@@ -20,10 +20,10 @@ func startCron(scripts Config, ch chan Config, shell string, InfoLogger *log.Log
 		c.AddFunc(v.CronExpression, func() {
 			_, err := os.Stat(v.ScriptPath)
 			if err != nil {
-				ErrLogger.Println("Script ID :", v.Name, "| Error reading sciprt file")
-				ErrLogger.Println("Script ID :", v.Name, "| STDERR : ", err)
+				ErrLogger.Println("Script ID : ", v.Name, "| Error reading sciprt file")
+				ErrLogger.Println("Script ID : ", v.Name, "| ERROR : ", err)
 			} else {
-				InfoLogger.Println("Script ID :", v.Name, "| Started Execution")
+				InfoLogger.Println("Script ID : ", v.Name, "| Started Execution")
 			}
 			cmd := exec.Command(shell, v.ScriptPath)
 			var cmd_out bytes.Buffer
@@ -34,12 +34,23 @@ func startCron(scripts Config, ch chan Config, shell string, InfoLogger *log.Log
 			if err != nil {
 				executionID := "Scheduled_" + time.Now().Format("2006_01_02_15:04:05")
 				ErrLogger.Println("Script ID : ", v.Name, "| Execution Failed | Execution ID : ", executionID)
-				ErrLogger.Println("Script ID : ", v.Name, "| STDERR : \n", cmd_err.String())
+				if cmd_out.String() != "" {
+					InfoLogger.Println("Script ID : ", v.Name, "| STDOUT : \n", cmd_out.String())
+				}
+				if cmd_err.String() != "" {
+					ErrLogger.Println("Script ID : ", v.Name, "| STDERR : \n", cmd_err.String())
+				}
 				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "FAILED", executionID)
 			} else {
 				executionID := "Scheduled_" + time.Now().Format("2006_01_02_15:04:05")
 				InfoLogger.Println("Script ID : ", v.Name, "| Execution Successful | Execution ID : ", executionID)
-				InfoLogger.Println("Script ID : ", v.Name, "STDOUT : \n", string(cmd_out.String()))
+				if cmd_out.String() != "" {
+					InfoLogger.Println("Script ID : ", v.Name, "| STDOUT : \n", cmd_out.String())
+				}
+
+				if cmd_err.String() != "" {
+					InfoLogger.Println("Script ID : ", v.Name, "| STDERR : \n", cmd_err.String())
+				}
 				insertData(db, execution_table_name, v.Name, time.Now().Format(time.RFC3339), "SUCCESS", executionID)
 			}
 
@@ -65,10 +76,10 @@ func manualExecution(configurations Config, scriptName string, shell string, Inf
 	} else {
 		_, err := os.Stat(scriptDetails.ScriptPath)
 		if err != nil {
-			ErrLogger.Println("Script ID :", scriptDetails.Name, "| Error reading sciprt file")
-			ErrLogger.Println("Script ID :", scriptDetails.Name, "| STDERR : ", err)
+			ErrLogger.Println("Script ID : ", scriptDetails.Name, "| Error reading sciprt file")
+			ErrLogger.Println("Script ID : ", scriptDetails.Name, "| STDERR : ", err)
 		} else {
-			InfoLogger.Println("Script ID :", scriptDetails.Name, "| Started Execution")
+			InfoLogger.Println("Script ID : ", scriptDetails.Name, "| Started Execution")
 		}
 		cmd := exec.Command(shell, scriptDetails.ScriptPath)
 		var cmd_out bytes.Buffer
@@ -79,13 +90,23 @@ func manualExecution(configurations Config, scriptName string, shell string, Inf
 		if err != nil {
 			executionID := "Manual_" + time.Now().Format("2006_01_02_15:04:05")
 			ErrLogger.Println("Script ID : ", scriptDetails.Name, "| Execution Failed | Execution ID : ", executionID)
-			ErrLogger.Println("Script ID : ", scriptDetails.Name, "| STDERR : \n", cmd_err.String())
+			if cmd_out.String() != "" {
+				InfoLogger.Println("Script ID : ", scriptDetails.Name, "| STDOUT : \n", cmd_out.String())
+			}
+			if cmd_err.String() != "" {
+				ErrLogger.Println("Script ID : ", scriptDetails.Name, "| STDERR : \n", cmd_err.String())
+			}
 			insertData(db, execution_table_name, scriptDetails.Name, time.Now().Format(time.RFC3339), "FAILED", executionID)
 			return "Execution Failed"
 		} else {
 			executionId := "Manual_" + time.Now().Format("2006_01_02_15:04:05")
 			InfoLogger.Println("Script ID : ", scriptDetails.Name, "| Execution Successful | Execution ID : ", executionId)
-			InfoLogger.Println("Script ID : ", scriptDetails.Name, "STDOUT : \n", string(cmd_out.String()))
+			if cmd_out.String() != "" {
+				InfoLogger.Println("Script ID : ", scriptDetails.Name, "| STDOUT : \n", cmd_out.String())
+			}
+			if cmd_err.String() != "" {
+				InfoLogger.Println("Script ID : ", scriptDetails.Name, "| STDERR : \n", cmd_err.String())
+			}
 			insertData(db, execution_table_name, scriptDetails.Name, time.Now().Format(time.RFC3339), "SUCCESS", executionId)
 			return "Execution Success"
 		}

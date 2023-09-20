@@ -1,15 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/handlers"
+	"moul.io/banner"
 )
 
 var CronEx = make(map[string][]string)
 
 func main() {
 	if os.Args[1] == "start" {
+		if os.Getenv("CONFIG_FILE_PATH") == "" {
+			fmt.Println("Please set CONFIG_FILE_PATH environment variable")
+			os.Exit(1)
+		}
 		jsonConf := readConfig(os.Getenv("CONFIG_FILE_PATH"))
 		var LOG_FILE string = jsonConf.LogFilePath
 
@@ -22,13 +30,16 @@ func main() {
 		if !tableExists(db, execution_table_name) {
 			createTable(db, execution_table_name)
 		}
+		// INFO
+		fmt.Println(banner.Inline("shellexec"))
+		fmt.Println("Version\t: ", info.Version)
+		fmt.Println("Author \t: ", info.Author)
+		fmt.Println("Email \t: ", info.Email)
 		// START API
-		// fmt.Println("Starting HTTP Endpoint")
 		log.Println("Starting HTTP Endpoint")
 		http.HandleFunc("/executions", readDbHandler(db, execution_table_name))
 		http.HandleFunc("/execute", manualExecutionHandler(jsonConf, &InfoLogger, &ErrLogger, db))
-		go http.ListenAndServe(jsonConf.BindIP+":"+jsonConf.BindPort, nil)
-		// fmt.Println("Started HTTP Endpoint successfully")
+		go http.ListenAndServe(jsonConf.BindIP+":"+jsonConf.BindPort, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
 		log.Println("Started HTTP Endpoint successfully")
 		log.Println("Listening on : http://" + jsonConf.BindIP + ":" + jsonConf.BindPort)
 
@@ -50,7 +61,7 @@ func main() {
 			url := "http://127.0.0.1:8080"
 			scriptName := os.Args[2]
 			shell := os.Args[3]
-			manuallyExecute(url, scriptName, shell)
+			manuallyExecuteClient(url, scriptName, shell)
 		}
 	}
 }
