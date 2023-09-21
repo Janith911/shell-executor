@@ -39,6 +39,8 @@ func main() {
 		log.Println("Starting HTTP Endpoint")
 		http.HandleFunc("/executions", readDbHandler(db, execution_table_name))
 		http.HandleFunc("/execute", manualExecutionHandler(jsonConf, &InfoLogger, &ErrLogger, db))
+		http.HandleFunc("/list", listScriptsHandler(jsonConf))
+		http.HandleFunc("/read", readScriptHandler(jsonConf))
 		go http.ListenAndServe(jsonConf.BindIP+":"+jsonConf.BindPort, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
 		log.Println("Started HTTP Endpoint successfully")
 		log.Println("Listening on : http://" + jsonConf.BindIP + ":" + jsonConf.BindPort)
@@ -63,5 +65,18 @@ func main() {
 			shell := os.Args[3]
 			manuallyExecuteClient(url, scriptName, shell)
 		}
+	} else if os.Args[1] == "list" {
+		url := "http://127.0.0.1:8080"
+		if len(os.Args) == 3 {
+			url = os.Args[2]
+		}
+		listScriptsClient(url)
+	} else if os.Args[1] == "read" {
+		url := "http://127.0.0.1:8080"
+		scriptId := os.Args[2]
+		if len(os.Args) == 4 {
+			url = os.Args[3]
+		}
+		readScriptClient(url, scriptId)
 	}
 }

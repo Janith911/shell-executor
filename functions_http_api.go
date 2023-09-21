@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -85,6 +86,53 @@ func manualExecutionHandler(configurations Config, InfoLogger *log.Logger, ErrLo
 	}
 }
 
+func listScriptsHandler(configuration Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			bs, err := json.Marshal(configuration.Scripts)
+			if err != nil {
+				fmt.Println("An ERROR Occured : ", err)
+			}
+			fmt.Fprintf(w, string(bs))
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+
+	}
+}
+
+func readScriptHandler(configuration Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			scriptId := r.URL.Query().Get("id")
+			var scriptPath string
+			for _, e := range configuration.Scripts {
+				if e.Name == scriptId {
+					scriptPath = e.ScriptPath
+				}
+			}
+			if scriptPath == "" {
+				fmt.Fprintf(w, "No such script")
+			} else {
+				_, err := os.Stat(scriptPath)
+				if err != nil {
+					fmt.Fprintf(w, "No such file in specified path")
+				} else {
+					bs, e := os.ReadFile(scriptPath)
+					if err != nil {
+						fmt.Println("An ERROR Occured : ", e)
+					}
+					fmt.Fprintf(w, string(bs))
+				}
+			}
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	}
+}
+
 // HTTP CLIENT FUNCTIONS
 func viewDBOutputClient(url string) {
 	req, err := http.NewRequest("GET", url+"/executions", nil)
@@ -143,4 +191,50 @@ func manuallyExecuteClient(url string, scriptName string, shell string) {
 	var obj ManualResponse
 	json.Unmarshal(bs, &obj)
 	fmt.Println(obj.Status)
+}
+
+func listScriptsClient(url string) {
+	req, err := http.NewRequest("GET", url+"/list", nil)
+	if err != nil {
+		fmt.Println("An ERROR Occured : ", err)
+	}
+	client := http.Client{}
+	resp, e := client.Do(req)
+	if e != nil {
+		fmt.Println("An ERROR Occured : ", e)
+	}
+	bs, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("An ERROR Occured : ", err)
+	}
+	var scripts []Script
+	err = json.Unmarshal(bs, &scripts)
+	if err != nil {
+		fmt.Println("An ERROR Occured : ", err)
+	}
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+	tbl := table.New("Script Name (ID)", "Script Path", "CRON Expression")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	for _, e := range scripts {
+		tbl.AddRow(e.Name, e.ScriptPath, e.CronExpression)
+	}
+	tbl.Print()
+}
+
+func readScriptClient(url string, scriptName string) {
+	req, e := http.NewRequest("GET", url+"/read?id="+scriptName, nil)
+	if e != nil {
+		fmt.Println("An ERROR Occured : ", e)
+	}
+	client := http.Client{}
+	resp, e := client.Do(req)
+	if e != nil {
+		fmt.Println("An ERROR Occured : ", e)
+	}
+	bs, e := io.ReadAll(resp.Body)
+	if e != nil {
+		fmt.Println("An ERROR Occured : ", e)
+	}
+	fmt.Println(string(bs))
 }
