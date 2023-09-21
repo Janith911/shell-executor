@@ -110,3 +110,17 @@ ID   ScriptName  StartTime                  Status   ExecutionId
 Eg :
 ./shellexec execute Test01 /bin/bash
 ```
+### 9. List Scripts
+```
+./shellexec list
+
+Eg :
+./shellexec list
+```
+### 10. Read Scripts
+```
+./shellexec read [SCRIPT_NAME]
+
+Eg :
+./shellexec read Test01
+```
